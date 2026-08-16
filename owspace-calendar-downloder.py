@@ -41,7 +41,11 @@ class _Image:
 
 
 def _init_url_pool(year: int) -> list[str]:
-    start = datetime.datetime(2015, 2, 18) if year == 2015 else datetime.datetime(year, 1, 1)
+    start = (
+        datetime.datetime(2015, 2, 18)
+        if year == 2015
+        else datetime.datetime(year, 1, 1)
+    )
     end = datetime.datetime(year, 12, 31)
     return [
         _URL_TEMPLATE.format(year=day.strftime("%Y"), mmdd=day.strftime("%m%d"))
@@ -82,7 +86,9 @@ def download_serial_owspace(url_pool: list[str], output_dir: str) -> None:
         _download_image(_build_image(url, output_dir))
 
 
-def download_threads_owspace(url_pool: list[str], output_dir: str, max_workers: int = 8) -> None:
+def download_threads_owspace(
+    url_pool: list[str], output_dir: str, max_workers: int = 8
+) -> None:
     images = (_build_image(url, output_dir) for url in url_pool)
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = [executor.submit(_download_image, image) for image in images]
@@ -92,8 +98,10 @@ def download_threads_owspace(url_pool: list[str], output_dir: str, max_workers: 
 
 def main() -> None:
     now_year = datetime.datetime.today().year
-    parser = argparse.ArgumentParser(prog="Get calendar", description="Get calendar from owspace")
-    parser.add_argument("year", type=int, choices=range(2015, now_year))
+    parser = argparse.ArgumentParser(
+        prog="Get calendar", description="Get calendar from owspace"
+    )
+    parser.add_argument("year", type=int, choices=range(2015, now_year + 1))
     parser.add_argument("-t", "--thread", action="store_true", required=False)
     args = parser.parse_args()
 
