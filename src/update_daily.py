@@ -25,7 +25,8 @@ _URL_TEMPLATE = "https://img.owspace.com/Public/uploads/Download/{year}/{mmdd}.j
 _FILENAME_RE = re.compile(r"^(\d{2})(\d{2})\.jpg$")
 
 _TODAY_RE = re.compile(
-    r"^!\[Placeholder-\d{4}-\d{2}-\d{2}\]\(assets/\d{4}/\d{4}\.jpg\)\s*$",
+    r'^<img src="assets/\d{4}/\d{4}\.jpg" alt="Placeholder-\d{4}-\d{2}-\d{2}" '
+    r'style="width: 35%; height: auto;">\s*$',
     re.MULTILINE,
 )
 _TITLE_LINE = "# Owspace Calendar"
@@ -105,7 +106,10 @@ def pull_days(
 
 
 def _today_link(day: datetime.date) -> str:
-    return f"![Placeholder-{day:%Y-%m-%d}](assets/{day:%Y}/{day:%m%d}.jpg)"
+    return (
+        f'<img src="assets/{day:%Y}/{day:%m%d}.jpg" '
+        f'alt="Placeholder-{day:%Y-%m-%d}" style="width: 35%; height: auto;">'
+    )
 
 
 def update_readme(day: datetime.date) -> None:
