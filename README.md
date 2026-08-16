@@ -1,11 +1,11 @@
 # Owspace Calendar
 
-> 人生即词语。<br />
-> 在单向历的文字中，<br />
-> 隐藏着驯服或是屈从的魔力。 <br />
-> 每日揭开新的一页，<br />
+> 人生即詞語。<br />
+> 在單向歷的文字中，<br />
+> 隱藏着馴服或是屈從的魔力。 <br />
+> 每日揭開新的一頁，<br />
 > 如同生活在妙不可言的等待中, <br />
-> 等待随便哪种未来。
+> 等待隨便哪種未來。
 
 <img src="assets/2026/0816.jpg" alt="Placeholder-2026-08-16" style="width: 35%; height: auto;">
 
@@ -34,3 +34,4 @@
 | 2026 | `0615.jpg` | https://img.owspace.com/Public/uploads/Download/2026/0615.jpg |
 | 2026 | `0616.jpg` | https://img.owspace.com/Public/uploads/Download/2026/0616.jpg |
 | 2026 | `0617.jpg` | https://img.owspace.com/Public/uploads/Download/2026/0617.jpg |
+

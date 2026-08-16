@@ -125,7 +125,7 @@ def main() -> None:
     os.makedirs(ASSETS_DIR, exist_ok=True)
     missing = collect_missing()
     table = build_table(missing)
-    content = README.read_text(encoding="utf-8") if README.exists() else "# Owspace Calendar 单向历\n"
+    content = README.read_text(encoding="utf-8") if README.exists() else "# Owspace Calendar\n"
     README.write_text(_replace_section(content, table), encoding="utf-8")
     print(f"Missing entries: {len(missing)}")
 

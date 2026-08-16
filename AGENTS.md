@@ -4,7 +4,7 @@ Guidance for AI agents and maintainers working in this repository.
 
 ## Project
 
-Owspace (单向历) calendar wallpaper downloader and completeness checker.
+Owspace (單向歷) calendar wallpaper downloader and completeness checker.
 Images are hosted at `https://img.owspace.com/Public/uploads/Download/{year}/{MMdd}.jpg`.
 
 ## Directory structure
