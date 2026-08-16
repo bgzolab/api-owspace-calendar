@@ -108,7 +108,7 @@ if __name__ == "__main__":
     parser.add_argument("-t", "--thread", action="store_true", required=False)
     args = parser.parse_args()
 
-    output_dir = str(args.year)
+    output_dir = "assets/" + str(args.year)
     url_pool = init_url_pool(args.year)
 
     os.makedirs(output_dir, exist_ok=True)
