@@ -22,97 +22,90 @@ import argparse
 import datetime
 import os
 import re
-import threading
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass
 
 import requests
 
-headers = {"Referer": "http://www.owspace.com/"}
+_HEADERS = {"Referer": "http://www.owspace.com/"}
+_URL_TEMPLATE = "https://img.owspace.com/Public/uploads/Download/{year}/{mmdd}.jpg"
+_DATE_PATTERN = re.compile(r"(\d{4})/(\d{2})(\d{2})\.jpg")
 
 
-def init_url_pool(year):
-    if year == 2015:
-        start = datetime.datetime(2015, 2, 18)
-    else:
-        start = datetime.datetime(year, 1, 1)
+@dataclass(frozen=True)
+class _Image:
+    url: str
+    file_name: str
+    timestamp: float
+
+
+def _init_url_pool(year: int) -> list[str]:
+    start = datetime.datetime(2015, 2, 18) if year == 2015 else datetime.datetime(year, 1, 1)
     end = datetime.datetime(year, 12, 31)
-    return get_url_pool_within_days(start, end)
+    return [
+        _URL_TEMPLATE.format(year=day.strftime("%Y"), mmdd=day.strftime("%m%d"))
+        for day in _iter_days(start, end)
+    ]
 
 
-def get_url_pool_within_days(start, end):
-    url_pool = []
-    while start <= end:
-        url_address = (
-            "https://img.owspace.com/Public/uploads/Download/"
-            + start.strftime("%Y/%m%d.jpg")
-        )
-        url_pool.append(url_address)
-        start += datetime.timedelta(days=1)
-    return url_pool
+def _iter_days(start: datetime.datetime, end: datetime.datetime):
+    day = start
+    while day <= end:
+        yield day
+        day += datetime.timedelta(days=1)
 
 
-def download_serial_owspace(url_pool, output_dir):
+def _build_image(url: str, output_dir: str) -> _Image:
+    match = _DATE_PATTERN.search(url)
+    if match is None:
+        raise ValueError(f"Unrecognized URL: {url}")
+    year, month, day = match.groups()
+    file_name = os.path.join(output_dir, f"{month}{day}.jpg")
+    timestamp = time.mktime((int(year), int(month), int(day), 0, 0, 0, 0, 0, 0))
+    return _Image(url=url, file_name=file_name, timestamp=timestamp)
+
+
+def _download_image(image: _Image) -> None:
+    response = requests.get(image.url, headers=_HEADERS, timeout=30)
+    if response.status_code != 200:
+        print(f"Failed when download {image.file_name}")
+        return
+    with open(image.file_name, "wb") as f:
+        f.write(response.content)
+    os.utime(image.file_name, (image.timestamp, image.timestamp))
+    print(f"Downloaded {image.file_name}")
+
+
+def download_serial_owspace(url_pool: list[str], output_dir: str) -> None:
     for url in url_pool:
-        regex = re.search(r"(\d{4})/(\d{2})(\d{2})(\.jpg)", url)
-        year = regex.group(1)
-        month = regex.group(2)
-        day = regex.group(3)
-        suffix = regex.group(4)
-        file_name = output_dir + "/" + month + day + suffix
-        timestamp = time.mktime((int(year), int(month), int(day), 0, 0, 0, 0, 0, 0))
-
-        download_image_with_customed_date(url, file_name, timestamp)
+        _download_image(_build_image(url, output_dir))
 
 
-def download_image_with_customed_date(url, file_name, timestamp):
-    response = requests.get(url, headers)
-    if response.status_code == 200:
-        access_time = timestamp
-        modified_time = timestamp
-        with open(file_name, "wb") as f:
-            f.write(response.content)
-            os.utime(file_name, (access_time, modified_time))
-        print(f"Downloaded {file_name}")
-    else:
-        print(f"Failed when download {file_name}")
+def download_threads_owspace(url_pool: list[str], output_dir: str, max_workers: int = 8) -> None:
+    images = (_build_image(url, output_dir) for url in url_pool)
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = [executor.submit(_download_image, image) for image in images]
+        for future in as_completed(futures):
+            future.result()
 
 
-def download_threads_owspace(url_pool, output_dir):
-    threads = []
-
-    for url in url_pool:
-        regex = re.search(r"(\d{4})/(\d{2})(\d{2})(\.jpg)", url)
-        year = regex.group(1)
-        month = regex.group(2)
-        day = regex.group(3)
-        suffix = regex.group(4)
-        file_name = output_dir + "/" + month + day + suffix
-        timestamp = time.mktime((int(year), int(month), int(day), 0, 0, 0, 0, 0, 0))
-
-        thread = threading.Thread(
-            target=download_image_with_customed_date, args=(url, file_name, timestamp)
-        )
-        thread.start()
-        threads.append(thread)
-
-    for thread in threads:
-        thread.join()
-
-
-if __name__ == "__main__":
+def main() -> None:
     now_year = datetime.datetime.today().year
-    parser = argparse.ArgumentParser(
-        prog="Get calendar", description="Get calendar from owspace"
-    )
+    parser = argparse.ArgumentParser(prog="Get calendar", description="Get calendar from owspace")
     parser.add_argument("year", type=int, choices=range(2015, now_year))
     parser.add_argument("-t", "--thread", action="store_true", required=False)
     args = parser.parse_args()
 
     output_dir = "assets/" + str(args.year)
-    url_pool = init_url_pool(args.year)
+    url_pool = _init_url_pool(args.year)
 
     os.makedirs(output_dir, exist_ok=True)
-    if args.thread is False:
-        download_serial_owspace(url_pool, output_dir)
-    else:
+    if args.thread:
         download_threads_owspace(url_pool, output_dir)
+    else:
+        download_serial_owspace(url_pool, output_dir)
+
+
+if __name__ == "__main__":
+    main()
