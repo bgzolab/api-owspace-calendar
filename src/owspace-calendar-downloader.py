@@ -1,20 +1,13 @@
-"""
+r"""
 created: 20230705
 
 ## Usage
 
 ```
-PS > python3 .\main.py --help
-usage: Get calendar [-h] [-t] {2015,2016,2017,2018,2019,2020,2021,2022}
+PS > python3 .\src\owspace-calendar-downloader.py --help
+usage: Get calendar [-h] [-t] {2015,2016,...,2026}
 
 Get calendar from owspace
-
-positional arguments:
-  {2015,2016,2017,2018,2019,2020,2021,2022}
-
-options:
-  -h, --help            show this help message and exit
-  -t, --thread
 ```
 """
 
@@ -25,8 +18,11 @@ import re
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
+from pathlib import Path
 
 import requests
+
+ROOT = Path(__file__).resolve().parent.parent
 
 _HEADERS = {"Referer": "http://www.owspace.com/"}
 _URL_TEMPLATE = "https://img.owspace.com/Public/uploads/Download/{year}/{mmdd}.jpg"
@@ -105,7 +101,7 @@ def main() -> None:
     parser.add_argument("-t", "--thread", action="store_true", required=False)
     args = parser.parse_args()
 
-    output_dir = "assets/" + str(args.year)
+    output_dir = ROOT / "assets" / str(args.year)
     url_pool = _init_url_pool(args.year)
 
     os.makedirs(output_dir, exist_ok=True)

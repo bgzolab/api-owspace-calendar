@@ -14,7 +14,7 @@ import sys
 import time
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 ASSETS_DIR = ROOT / "assets"
 README = ROOT / "README.md"
 SECTION_TITLE = "## 404 Days"
@@ -25,7 +25,7 @@ _URL_TEMPLATE = "https://img.owspace.com/Public/uploads/Download/{year}/{mmdd}.j
 
 def iter_expected_days(year: int):
     start = YEAR_START_OVERRIDE.get(year, datetime.date(year, 1, 1))
-    end = datetime.date(year, 12, 31)
+    end = min(datetime.date(year, 12, 31), datetime.date.today())
     day = start
     while day <= end:
         yield day
