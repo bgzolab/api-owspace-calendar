@@ -35,3 +35,6 @@
 | 2026 | `0616.jpg` | https://img.owspace.com/Public/uploads/Download/2026/0616.jpg |
 | 2026 | `0617.jpg` | https://img.owspace.com/Public/uploads/Download/2026/0617.jpg |
 
+## Copyright
+
+© owspace 2016. All trademarks are the property of their respective owners.
