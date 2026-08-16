@@ -66,9 +66,7 @@ def _download(url: str, target: Path, day: datetime.date) -> bool:
             return False
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(response.content)
-        timestamp = time.mktime(
-            (day.year, day.month, day.day, 0, 0, 0, 0, 0, 0)
-        )
+        timestamp = time.mktime((day.year, day.month, day.day, 0, 0, 0, 0, 0, 0))
         os.utime(target, (timestamp, timestamp))
         print(f"Downloaded {target.relative_to(ROOT)}")
         return True
@@ -133,7 +131,7 @@ def main() -> None:
     )
     parser.add_argument("--year", type=int, default=datetime.date.today().year)
     parser.add_argument("--days", type=int, default=7)
-    parser.add_argument("--max-failures", type=int, default=3)
+    parser.add_argument("--max-failures", type=int, default=1)
     args = parser.parse_args()
 
     pulled = pull_days(args.year, args.days, args.max_failures)
