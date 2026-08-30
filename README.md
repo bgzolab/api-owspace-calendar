@@ -7,7 +7,7 @@
 > 如同生活在妙不可言的等待中, <br />
 > 等待隨便哪種未來。
 
-<img src="assets/2026/0829.jpg" alt="Placeholder-2026-08-29" style="width: 35%; height: auto;">
+<img src="assets/2026/0830.jpg" alt="Placeholder-2026-08-30" style="width: 35%; height: auto;">
 
 <a href="https://apps.apple.com/cn/app/%E5%8D%95%E5%90%91%E5%8E%86/id1140390095">
     <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store" style="width: 120px;">
