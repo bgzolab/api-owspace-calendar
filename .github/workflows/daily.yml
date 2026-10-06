@@ -2,7 +2,11 @@ name: Daily calendar update
 
 on:
   schedule:
-    - cron: "0 0 * * *"
+    # 00:07 Asia/Shanghai. GitHub's schedule trigger is best-effort: runs can
+    # be delayed for hours (or dropped) when the scheduler is loaded, and
+    # minute 0 takes the worst of it. The script resolves "today" in
+    # Asia/Shanghai, so a late run still stamps the correct day.
+    - cron: "7 0 * * *"
       timezone: "Asia/Shanghai"
   workflow_dispatch:
 
@@ -34,5 +38,6 @@ jobs:
             echo "No changes to commit"
           else
             git commit -m "chore: daily calendar update"
+            git pull --rebase
             git push
           fi

@@ -7,13 +7,16 @@ Daily maintenance job for CI:
 
 Usage:
     PS > python3 .\src\update_daily.py
+
+Dates are resolved in Asia/Shanghai (UTC+8), not the machine's local time:
+the calendar is a China-facing product and CI runners run in UTC, so a run
+scheduled at midnight Beijing (16:00 UTC) would otherwise stamp yesterday.
 """
 
 import argparse
 import datetime
 import os
 import re
-import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -23,6 +26,16 @@ README = ROOT / "README.md"
 _HEADERS = {"Referer": "http://www.owspace.com/"}
 _URL_TEMPLATE = "https://img.owspace.com/Public/uploads/Download/{year}/{mmdd}.jpg"
 _FILENAME_RE = re.compile(r"^(\d{2})(\d{2})\.jpg$")
+
+# Asia/Shanghai has observed no DST since 1991, so a fixed UTC+8 offset is
+# exact for every date this project covers and needs no tzdata package.
+_CN_TZ = datetime.timezone(datetime.timedelta(hours=8), name="Asia/Shanghai")
+
+
+def today_cn() -> datetime.date:
+    """Today's date in Asia/Shanghai."""
+    return datetime.datetime.now(_CN_TZ).date()
+
 
 _TODAY_RE = re.compile(
     r'^<img src="assets/\d{4}/\d{4}\.jpg" alt="Placeholder-\d{4}-\d{2}-\d{2}" '
@@ -67,7 +80,9 @@ def _download(url: str, target: Path, day: datetime.date) -> bool:
             return False
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(response.content)
-        timestamp = time.mktime((day.year, day.month, day.day, 0, 0, 0, 0, 0, 0))
+        timestamp = datetime.datetime(
+            day.year, day.month, day.day, tzinfo=_CN_TZ
+        ).timestamp()
         os.utime(target, (timestamp, timestamp))
         print(f"Downloaded {target.relative_to(ROOT)}")
         return True
@@ -81,7 +96,7 @@ def pull_days(
 ) -> int:
     start = start_from or latest_date(year)
     if start is None:
-        start = datetime.date.today()
+        start = today_cn()
     else:
         start = start + datetime.timedelta(days=1)
     end = min(start + datetime.timedelta(days=days - 1), datetime.date(year, 12, 31))
@@ -130,16 +145,16 @@ def update_readme(day: datetime.date) -> None:
 
 
 def main() -> None:
+    today = today_cn()
     parser = argparse.ArgumentParser(
         description="Pull the current year's calendar forward and refresh the README today link"
     )
-    parser.add_argument("--year", type=int, default=datetime.date.today().year)
+    parser.add_argument("--year", type=int, default=today.year)
     parser.add_argument("--days", type=int, default=7)
     parser.add_argument("--max-failures", type=int, default=1)
     args = parser.parse_args()
 
     pulled = pull_days(args.year, args.days, args.max_failures)
-    today = datetime.date.today()
     if today.year == args.year:
         update_readme(today)
     print(f"Pulled {pulled} new images for {args.year}")
